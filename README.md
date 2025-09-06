@@ -265,7 +265,7 @@ curl http://localhost:4000/transaction
 | app-alb       | app-alb  | Internal-facing | 3-tier-vpc | App-Private-Subnet-1a, 1b                   | app-Internal-alb-sg         | 80 app-tier          |
 ---
 
-## Immediately update the `nginx.config` of your internal load balancer Address and push to the github repo
+
 ---
 ## Create Auto Scaling
 
@@ -275,7 +275,7 @@ curl http://localhost:4000/transaction
 
 ---
 
-Immediately update the nginx.config of your internal load balancer Address
+## Immediately update the `nginx.config` of your internal load balancer Address and push to repo
 
 ```bash
 sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf 
@@ -321,7 +321,6 @@ sudo systemctl enable nginx
 | web-alb       | web-alb  | Internet-facing | 3-tier-vpc | Public-Subnet-1a, 1b,                         | web-frontend-alb        | 80 web-tier          |
 ---
 
-## Immediately update the `nginx.config` of your internal load balancer Address
 ---
 ## Create Auto Scaling
 
