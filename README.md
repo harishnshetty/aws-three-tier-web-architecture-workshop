@@ -126,10 +126,29 @@ npm -v # Should print "10.9.3".
 ```
 
 ```bash
-git clone https://github.com/aws-samples/aws-three-tier-web-architecture-workshop.git
+git clone https://github.com/harishnshetty/aws-three-tier-web-architecture-workshop.git
 ```
 
+```bash
+cd ~
+cp -rf ~/aws-three-tier-web-architecture-workshop/application-code/web-tier .
+cd ~/web-tier
+npm install 
+npm run build
+```
+<!-- Immediately update the nginx.config of your internal load balancer Address
 
+```bash
+sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf 
+sudo cp -f /home/ec2-user/aws-three-tier-web-architecture-workshop/application-code/nginx.conf /etc/nginx/nginx.conf
+
+# Validate config before reload
+sudo nginx -t
+
+# Restart nginx
+sudo systemctl restart nginx
+sudo systemctl enable nginx
+``` -->
 ---
 
 ## Setup the Ec2-instance and create the IAM (APP Tier)
@@ -153,6 +172,8 @@ mysql --version
 ```bash
 mysql -h CHANGE-TO-YOUR-RDS-ENDPOINT -u CHANGE-TO-USER-NAME -p
 ```
+
+**Ref:** https://catalog.us-east-1.prod.workshops.aws/workshops/85cd2bb2-7f79-4e96-bdee-8078e469752a/en-US/part3/configuredatabase
 
 ```sql
 CREATE DATABASE webappdb;
@@ -190,67 +211,38 @@ nvm current # Should print "v22.19.0".
 npm -v # Should print "10.9.3".
 ```
 
-```bash
-git clone https://github.com/aws-samples/aws-three-tier-web-architecture-workshop.git
-```
 ---
-
-## Create images for both web and app Tier
-- Web-Tier-IAM-IMAGE  
-- APP-Tier-IAM-IMAGE  
-
----
-
-## Create the  S3 Buckets
-
 ```bash
-git clone https://github.com/harishnshetty/3-tier-aws-15-services.git
+git clone https://github.com/harishnshetty/aws-three-tier-web-architecture-workshop.git
 ```
 
-1. 3-tier-aws-project-8745 (upload your content)  
-2. 3tier-vpc-flow-log-8745 (attach this bucket this immediately) with arn Value [ arn:aws:s3:::3tier-vpc-flow-log-8745 ]
-
----
-
-
-
-## Now add the Database into the RDS-MYSQL
-
-**Ref:** https://catalog.us-east-1.prod.workshops.aws/workshops/85cd2bb2-7f79-4e96-bdee-8078e469752a/en-US/part3/configuredatabase
-
-
----
-
-
-
-## Create web launch template
-
-| Parameter              | Value                |
-|------------------------|----------------------|
-| Name                   | web-tier-lt          |
-| My AMI's               | Web-Tier-IAM-IMAGE   |
-| Security Groups        | Web-srv-sg           |
-| IAM Instance Profile   | 3-tier-web-role      |
-
-**User Data:**
 ```bash
-#!/bin/bash
-# Log everything to /var/log/user-data.log
-exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
-
-# Install AWS CLI v2 (if not already)
-yum install -y awscli
-
-# Download application code from S3
-aws s3 cp s3://<YOUR-S3-BUCKET-NAME>/application-code /home/ec2-user/application-code --recursive
-
-# Go to app directory
-cd /home/ec2-user/application-code
-
-# Make script executable and run it
-chmod +x web.sh
-sudo ./web.sh
+cd ~
+cp -rf ~/aws-three-tier-web-architecture-workshop/application-code/app-tier .
+cd ~/app-tier
+npm install 
+npm run build
 ```
+
+```bash
+cd ~/app-tier
+npm install
+npm audit fix
+pm2 start index.js
+pm2 startup
+
+pm2 save
+```
+```bash
+curl http://localhost:4000/health
+```
+
+```bash
+curl http://localhost:4000/transaction
+```
+
+## Create images app Tier
+- APP-Tier-AMI-IMAGE  
 
 ---
 
@@ -261,36 +253,16 @@ sudo ./web.sh
 | Name                   | app-tier-lt          |
 | My AMI's               | app-Tier-IAM-IMAGE   |
 | Security Groups        | app-Srv-sg           |
-| IAM Instance Profile   | 3-tier-web-role      |
+| IAM Instance Profile   | 3-tier-role      |
 
-**User Data:**
-```bash
-#!/bin/bash
-# Log everything to /var/log/user-data.log
-exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
-# Install AWS CLI v2 (if not already)
-yum install -y awscli
-
-# Download application code from S3
-aws s3 cp s3://<YOUR-S3-BUCKET-NAME>/application-code /home/ec2-user/application-code --recursive
-
-# Go to app directory
-cd /home/ec2-user/application-code
-
-# Make script executable and run it
-chmod +x app.sh
-sudo ./app.sh
-```
 
 ---
 
 ## Create target group 
 
-| Tier      | Name      | Port  | VPC         | Health-check   |
-|-----------|-----------|-------|-------------|---------------|
-| Web Tier  | Web-tier  | 80    | 3-tier-vpc  |               |
-| App Tier  | App-tier  | 4000  | 3-tier-vpc  | /health        |
+| Tier      | Name      | Port  | VPC         | Health-check  |
+| App Tier  | App-tier  | 4000  | 3-tier-vpc  | /health       |
 ---
 
 ## Create Load balancers
@@ -298,8 +270,51 @@ sudo ./app.sh
 ### Application Load Balancers
 | Load Balancer | Name     | Type            | VPC        | Availability Zones                                 | Security Groups | Listeners & Routing   |
 |---------------|----------|-----------------|------------|---------------------------------------------------|-----------------|----------------------|
-| app-alb       | app-alb  | Internal-facing | 3-tier-vpc | App-Private-Subnet-1a, 1b, 1c                     | app-Internal-alb-sg         | 80 app-tier          |
-| web-alb       | web-alb  | Internet-facing | 3-tier-vpc | Public-Subnet-1a, 1b, 1                           | web-frontend-alb        | 80 web-tier          |
+| app-alb       | app-alb  | Internal-facing | 3-tier-vpc | App-Private-Subnet-1a, 1b                   | app-Internal-alb-sg         | 80 app-tier          |
+---
+
+## Immediately update the `nginx.config` of your internal load balancer Address and push to the github repo
+---
+## Create Auto Scaling
+
+| Name            | Launch template | Instance types | VPC        | Subnets (AZs)                       | Load balancer | Desired | min | max | Scaling policy | Notifications    | Tag      |
+|-----------------|----------------|---------------|------------|--------------------------------------|---------------|---------|-----|-----|---------------|-----------------|----------|
+| app-tier-asg    | app-tier-lb    | t2.micro      | 3-tier-vpc | app-Private-Subnet-1a, 1b      | app-tier      | 2      | 2   | 2   | 60            |     | app-asg  |
+
+---
+
+
+
+
+
+## Create images app Tier
+- APP-Tier-AMI-IMAGE  
+
+## Create web launch template
+
+| Parameter              | Value                |
+|------------------------|----------------------|
+| Name                   | web-tier-lt          |
+| My AMI's               | Web-Tier-AMI-IMAGE   |
+| Security Groups        | Web-srv-sg           |
+| IAM Instance Profile   | 3-tier-role          |
+
+
+## Create target group 
+
+| Tier      | Name      | Port  | VPC         | Health-check  |
+|-----------|-----------|-------|-------------|---------------|
+| Web Tier  | Web-tier  | 80    | 3-tier-vpc  |               |
+
+---
+
+
+## Create Load balancers
+
+### Application Load Balancers
+| Load Balancer | Name     | Type            | VPC        | Availability Zones                                 | Security Groups | Listeners & Routing   |
+|---------------|----------|-----------------|------------|---------------------------------------------------|-----------------|----------------------|
+| web-alb       | web-alb  | Internet-facing | 3-tier-vpc | Public-Subnet-1a, 1b,                         | web-frontend-alb        | 80 web-tier          |
 ---
 
 ## Immediately update the `nginx.config` of your internal load balancer Address
@@ -308,8 +323,7 @@ sudo ./app.sh
 
 | Name            | Launch template | Instance types | VPC        | Subnets (AZs)                       | Load balancer | Desired | min | max | Scaling policy | Notifications    | Tag      |
 |-----------------|----------------|---------------|------------|--------------------------------------|---------------|---------|-----|-----|---------------|-----------------|----------|
-| web-tier-asg    | web-tier-lb    | t2.micro      | 3-tier-vpc | Web-Private-Subnet-1a, 1b, 1c        | web-tier      | 3       | 3   | 6   | 60            | web-tier-sns    | web-asg  |
-| app-tier-asg    | app-tier-lb    | t2.micro      | 3-tier-vpc | app-Private-Subnet-1a, 1b, 1c        | app-tier      | 3       | 3   | 6   | 60            | app-tier-sns    | app-asg  |
+| web-tier-asg    | web-tier-lb    | t2.micro      | 3-tier-vpc | public-Subnet-1a, 1b       | web-tier      | 2       | 2   | 2   | 60            |     | web-asg  |
 
 ---
 
