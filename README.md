@@ -211,12 +211,10 @@ cd ~
 cp -rf ~/aws-three-tier-web-architecture-workshop/application-code/app-tier .
 cd ~/app-tier
 npm install 
-npm run build
+
 ```
 
 ```bash
-cd ~/app-tier
-npm install
 npm audit fix
 pm2 start index.js
 pm2 startup
