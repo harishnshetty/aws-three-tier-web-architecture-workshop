@@ -130,6 +130,11 @@ git clone https://github.com/harishnshetty/aws-three-tier-web-architecture-works
 ```
 
 ```bash
+sudo chown -R ec2-user:ec2-user /home/ec2-user
+sudo chmod -R 755 /home/ec2-user
+```
+
+```bash
 cd ~
 cp -rf ~/aws-three-tier-web-architecture-workshop/application-code/web-tier .
 cd ~/web-tier
@@ -207,8 +212,14 @@ git clone https://github.com/harishnshetty/aws-three-tier-web-architecture-works
 ```
 
 ```bash
+
+
 cd ~
 cp -rf ~/aws-three-tier-web-architecture-workshop/application-code/app-tier .
+
+sudo chown -R ec2-user:ec2-user /home/ec2-user
+sudo chmod -R 755 /home/ec2-user/app-tier
+
 cd ~/app-tier
 npm install 
 
@@ -276,6 +287,9 @@ curl http://localhost:4000/transaction
 ## Immediately update the `nginx.config` of your internal load balancer Address and push to repo
 
 ```bash
+sudo chown -R ec2-user:ec2-user /home/ec2-user
+sudo chmod -R 755 /home/ec2-user
+
 sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf 
 sudo cp -f /home/ec2-user/aws-three-tier-web-architecture-workshop/application-code/nginx.conf /etc/nginx/nginx.conf
 
@@ -328,4 +342,3 @@ sudo systemctl enable nginx
 
 ---
 
-## Configure the Route53  
