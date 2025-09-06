@@ -249,10 +249,12 @@ curl http://localhost:4000/transaction
 
 ---
 
-## Create target group 
+## Create target group for app-tier
 
-| Tier      | Name      | Port  | VPC         | Health-check  |
-| App Tier  | App-tier  | 4000  | 3-tier-vpc  | /health       |
+| Tier     | Name     | Port | VPC        | Health Check |
+|----------|----------|------|------------|--------------|
+| App Tier | app-tier | 4000 | 3-tier-vpc | /health      |
+
 ---
 
 ## Create Load balancers
