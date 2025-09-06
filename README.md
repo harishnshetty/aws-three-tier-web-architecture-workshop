@@ -136,19 +136,7 @@ cd ~/web-tier
 npm install 
 npm run build
 ```
-<!-- Immediately update the nginx.config of your internal load balancer Address
 
-```bash
-sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf 
-sudo cp -f /home/ec2-user/aws-three-tier-web-architecture-workshop/application-code/nginx.conf /etc/nginx/nginx.conf
-
-# Validate config before reload
-sudo nginx -t
-
-# Restart nginx
-sudo systemctl restart nginx
-sudo systemctl enable nginx
-``` -->
 ---
 
 ## Setup the Ec2-instance and create the IAM (APP Tier)
@@ -184,6 +172,8 @@ SHOW TABLES;
 INSERT INTO transactions (amount,description) VALUES ('400','groceries');
 SELECT * FROM transactions;
 ```
+
+Immediately update the DBconfig.js of database Details
 
 ```bash 
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -283,12 +273,24 @@ curl http://localhost:4000/transaction
 
 ---
 
+Immediately update the nginx.config of your internal load balancer Address
 
+```bash
+sudo mv /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf 
+sudo cp -f /home/ec2-user/aws-three-tier-web-architecture-workshop/application-code/nginx.conf /etc/nginx/nginx.conf
+
+# Validate config before reload
+sudo nginx -t
+
+# Restart nginx
+sudo systemctl restart nginx
+sudo systemctl enable nginx
+```
 
 
 
 ## Create images app Tier
-- APP-Tier-AMI-IMAGE  
+- WEb-Tier-AMI-IMAGE  
 
 ## Create web launch template
 
